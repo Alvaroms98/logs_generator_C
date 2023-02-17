@@ -3,6 +3,8 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 typedef enum {
     NEW_ERROR = 1,
@@ -11,7 +13,7 @@ typedef enum {
     FINISH
 } MENU_OPTIONS;
 
-char* LOGS_FOLDER = "logs/";
+const char* LOGS_FOLDER = "logs/";
 
 /**
  * @brief Request employee identity from stdin. Employee ID must be a four digit long.
@@ -19,14 +21,6 @@ char* LOGS_FOLDER = "logs/";
  * @return int : Four digit long employee number.
  */
 int request_identity();
-
-/**
- * @brief Returns today's date with the format YYYY-MM-DD.
- * 
- * @param date char*: pointer to store string date.
- * @param length int: length of the char array.
- */
-void today_date(char* date, int length);
 
 /**
  * @brief Calculates today's date and create a log file with that date
@@ -94,24 +88,41 @@ int request_identity() {
     return id;
 }
 
+int create_log_directory() {
+    int success = 1;
+    if (mkdir(LOGS_FOLDER, 0777) == -1) {
+        if (errno != EEXIST)
+            success = 0;
+    }
+    return success;
+}
+
 int create_today_log_file() {
+    int success = 1;
+
     // Compute date
     time_t timestamp = time(NULL);
     struct tm* date_tm = localtime(&timestamp);
     char date[15];
     strftime(date, sizeof(date), "%Y-%m-%d", date_tm);
 
-    // Create new log file
-    int success = 1;
-    char filename[40];
-    strcpy(filename, LOGS_FOLDER);
-    strcat(filename, date);
-    FILE* file = fopen(filename, "a");
+    // Create log directory and return if fail
+    int dir_created_flag = create_log_directory();
+    if (dir_created_flag) {
+        // Create new log file
+        int success = 1;
+        char filename[40];
+        strcpy(filename, LOGS_FOLDER);
+        strcat(filename, date);
+        FILE* file = fopen(filename, "a");
 
-    if (file == NULL)
+        if (file == NULL)
+            success = 0;
+        
+        fclose(file);
+    } else {
         success = 0;
-    
-    fclose(file);
+    }
     return success;
 }
 
