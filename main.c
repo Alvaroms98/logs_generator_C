@@ -14,6 +14,13 @@ typedef enum {
 } MENU_OPTIONS;
 
 const char* LOGS_FOLDER = "logs/";
+char FILENAME[40];
+
+/**
+ * @brief Clean stdin buffer until it reads '\n' character
+ * 
+ */
+void clear_stdin();
 
 /**
  * @brief Request employee identity from stdin. Employee ID must be a four digit long.
@@ -37,6 +44,27 @@ int create_today_log_file();
  */
 int display_menu();
 
+/**
+ * @brief Request to the user to insert the error message
+ * and write it in the current log file.
+ * 
+ * @param employee_id Number of the employee submiting the new error.
+ */
+void add_new_error(int employee_id);
+
+/**
+ * @brief Show current log file in the terminal
+ * 
+ */
+void show_current_logs();
+
+/**
+ * @brief Deletes current log file and creates again
+ * shows to the user a confirmation message.
+ * 
+ */
+void clear_current_logs();
+
 // MAIN
 int main() {
     // Employee ID
@@ -52,13 +80,13 @@ int main() {
     MENU_OPTIONS option = (MENU_OPTIONS) display_menu();
     switch (option) {
     case NEW_ERROR:
-        printf("new error\n");
+        add_new_error(id);
         break;
     case ALL_ERRORS:
-        printf("all errors\n");
+        show_current_logs();
         break;
     case CLEAN:
-        printf("clean\n");
+        clear_current_logs();
         break;
     case FINISH:
         printf("finish\n");
@@ -73,6 +101,7 @@ int request_identity() {
     int id = 0;
     printf("Enter employee number: ");
     scanf("%s", id_string);
+    clear_stdin();
     int i = 0;
     int x = 3;
     while(id_string[i]) {
@@ -110,11 +139,9 @@ int create_today_log_file() {
     int dir_created_flag = create_log_directory();
     if (dir_created_flag) {
         // Create new log file
-        int success = 1;
-        char filename[40];
-        strcpy(filename, LOGS_FOLDER);
-        strcat(filename, date);
-        FILE* file = fopen(filename, "a");
+        strcpy(FILENAME, LOGS_FOLDER);
+        strcat(FILENAME, date);
+        FILE* file = fopen(FILENAME, "a");
 
         if (file == NULL)
             success = 0;
@@ -131,12 +158,55 @@ int display_menu() {
     char* menu_interface = 
                     "\n\tMENU\n"
                     "1) Add new error.\n"
-                    "2) Check error list.\n"
+                    "2) Show errors.\n"
                     "3) Clean errors.\n"
                     "4) Finish workday.\n\n"
                     "Choose option: ";
     printf("%s", menu_interface);
     scanf("%d", &option);
+    clear_stdin();
     return option;
 }
 
+void clear_stdin() {
+    while ((getchar()) != '\n');
+}
+
+void add_new_error(int employee_id) {
+    char err_msg[100];
+    char full_msg[150];
+    sprintf(full_msg, "[%d]: ", employee_id);
+    printf("Write error message: ");
+    scanf("%99[^\n]", err_msg);
+    clear_stdin();
+    strcat(full_msg, err_msg);
+    printf("%s", full_msg);
+
+    // Write message in log file
+    FILE* file = fopen(FILENAME, "a");
+    fprintf(file, "%s\n", full_msg);
+    fclose(file);
+}
+
+void show_current_logs() {
+    printf("\nLogs from file: %s: \n\n", FILENAME);
+    char line[200];
+    FILE* file = fopen(FILENAME, "r");
+    int i = 1;
+    while (fgets(line, sizeof(line), file)) {
+        printf("%d. %s", i, line);
+        i++;
+    } 
+    fclose(file);
+    printf("----------------------------------------\n");
+}
+
+void clear_current_logs() {
+    printf("Are you sure that you want to clear today's history? [Y/n] ");
+    char answer[10];
+    scanf("%c", answer);
+    if (answer[0] == 'Y' || answer[0] == 'y') {
+        FILE* file = fopen(FILENAME, "w");
+        fclose(file);
+    }
+}

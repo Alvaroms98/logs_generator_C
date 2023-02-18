@@ -1,0 +1,9 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/alvaro/logs_generator_C",
+            "binaryPath": "/home/alvaro/logs_generator_C/main",
+            "binaryArgs": []
+        }
+    ]
+}
