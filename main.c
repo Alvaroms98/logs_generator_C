@@ -213,6 +213,22 @@ void clear_current_logs() {
     char answer[10];
     scanf("%c", answer);
     if (answer[0] == 'Y' || answer[0] == 'y') {
+        // Creates a backup copy before deleting content
+        char filename_backup[50];
+        strcpy(filename_backup, FILENAME);
+        strcat(filename_backup, "_backup");
+
+        // Read all data and write in the backup
+        FILE* f = fopen(FILENAME, "r");
+        FILE* f_backup = fopen(filename_backup, "w");
+        char c;
+        while ((c = fgetc(f)) != EOF) {
+            fprintf(f_backup, "%c", c);
+        }
+        fclose(f);
+        fclose(f_backup);
+        
+        // Clear current logs
         FILE* file = fopen(FILENAME, "w");
         fclose(file);
     }
