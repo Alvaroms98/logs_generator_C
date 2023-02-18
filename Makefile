@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-g -Wall
-DEPS=
-OBJ= main.o
+DEPS= functions.h
+OBJ= main.o functions.o
 
 LIBS=-lm
 

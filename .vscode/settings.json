@@ -5,5 +5,8 @@
             "binaryPath": "/home/alvaro/logs_generator_C/main",
             "binaryArgs": []
         }
-    ]
+    ],
+    "files.associations": {
+        "functions.h": "c"
+    }
 }
